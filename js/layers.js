@@ -122,7 +122,7 @@
 
                 // Flip edge values
                 if ($("#sobel-flip").prop("checked")) {
-                    for (var i = 0; i < outputImage.data.length; i+=4) {
+                    for (var i = 0; i < outputImage.data.length; i += 4) {
                         if (outputImage.data[i] == 0) {
                             outputImage.data[i]     =
                             outputImage.data[i + 1] =
@@ -140,17 +140,32 @@
     }
 
     /*
+     * Apply the histogram operations
+     */
+    function applyHistogramOp(processedImage, outputImage) {
+        switch (currentHistogramOp) {
+            case "histogram-equalization":
+                var mode = $("#histogram-equalization-mode").val();
+                imageproc.histogramEqualization(processedImage, outputImage, mode);
+                break;
+        }
+    }
+
+    /*
      * The image processing operations are set up for the different layers.
      * Operations are applied from the base layer to the outline layer. These
      * layers are combined appropriately when required.
      */
     imageproc.operation = function(inputImage, outputImage) {
+
         // Apply the basic processing operations
         var processedImage = inputImage;
         if (currentBasicOp != "no-op") {
             processedImage = imageproc.createBuffer(outputImage);
             applyBasicOp(inputImage, processedImage);
         }
+
+        
 
         // Apply the base layer operations
         var baseLayer = processedImage;
@@ -169,10 +184,6 @@
             if (currentShadeLayerOp == "dither" &&
                 $("#dither-transparent").prop("checked")) {
 
-                /**
-                 * TODO: You need to show the base layer (baseLayer) for
-                 * the white pixels (transparent)
-                 */
                 for (var i = 0; i < shadeLayer.data.length; i += 4) {
                     if (shadeLayer.data[i] == 255 &&
                         shadeLayer.data[i + 1] == 255 &&
@@ -197,10 +208,6 @@
             if (currentOutlineLayerOp == "sobel" &&
                 $("#sobel-transparent").prop("checked")) {
 
-                /**
-                 * TODO: You need to show the shade layer (shadeLayer) for
-                 * the non-edge pixels (transparent)
-                 */
                 for (var i = 0; i < outlineLayer.data.length; i += 4) {
                     var isNonEdge;
 
@@ -226,12 +233,20 @@
                         outlineLayer.data[i + 3] = shadeLayer.data[i + 3];
                     }
                 }
-
             }
         }
+        // Apply the histogram operations
+        var histogramImage = processedImage;
+        if (currentHistogramOp == "histogram-equalization" ) {
+            histogramImage = imageproc.createBuffer(outputImage);
+            applyHistogramOp(processedImage, histogramImage);
+        }
 
+
+
+        
         // Show the accumulated image
-        imageproc.copyImageData(outlineLayer, outputImage);
-    }
- 
+        imageproc.copyImageData(histogramImage, outputImage);
+    };
+
 }(window.imageproc = window.imageproc || {}));

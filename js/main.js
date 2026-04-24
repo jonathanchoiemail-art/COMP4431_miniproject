@@ -8,6 +8,10 @@ var currentBaseLayerOp = "no-op";
 // Currently selected shade layer operation
 var currentShadeLayerOp = "no-op";
 
+///the added histogram operation******************
+var currentHistogramOp = "no-op";
+
+
 // Currently selected outline layer operation
 var currentOutlineLayerOp = "no-op";
 
@@ -42,6 +46,9 @@ function showTab(e) {
             break;
         case "outline-dropdown":
             target = target.find("ul li a[href='#" + currentOutlineLayerOp + "']");
+            break;
+        case "histogram-dropdown":
+            target = target.find("ul li a[href='#" + currentHistogramOp + "']");
             break;
     }
 
@@ -82,6 +89,9 @@ function changeTabs(e) {
             break;
         case "outline-dropdown":
             currentOutlineLayerOp = target.attr("href").substring(1);
+            break;
+        case "histogram-dropdown":
+            currentHistogramOp = target.attr("href").substring(1);
             break;
     }
 
