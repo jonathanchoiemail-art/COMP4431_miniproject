@@ -178,7 +178,7 @@
         var shadeLayer = baseLayer;
         if (currentShadeLayerOp != "no-op") {
             shadeLayer = imageproc.createBuffer(outputImage);
-            applyShadeLayerOp(inputImage, processedImage, shadeLayer);
+            applyShadeLayerOp(inputImage, baseLayer, shadeLayer);
 
             // Show base layer for dithering
             if (currentShadeLayerOp == "dither" &&
@@ -202,7 +202,7 @@
         var outlineLayer = shadeLayer;
         if (currentOutlineLayerOp != "no-op") {
             outlineLayer = imageproc.createBuffer(outputImage);
-            applyOutlineLayerOp(inputImage, processedImage, outlineLayer);
+            applyOutlineLayerOp(inputImage, shadeLayer, outlineLayer);
 
             // Show shade layer for non-edge pixels
             if (currentOutlineLayerOp == "sobel" &&
@@ -236,7 +236,7 @@
             }
         }
         // Apply the histogram operations
-        var histogramImage = processedImage;
+        var histogramImage = outlineLayer;
         if (currentHistogramOp == "histogram-equalization" ) {
             histogramImage = imageproc.createBuffer(outputImage);
             applyHistogramOp(processedImage, histogramImage);
