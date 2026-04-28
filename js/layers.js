@@ -148,6 +148,20 @@
                 var mode = $("#histogram-equalization-mode").val();
                 imageproc.histogramEqualization(processedImage, outputImage, mode);
                 break;
+
+            case "clahe":
+                var tileSize = parseInt($("#clahe-tile-size").val());
+                var clipLimit = parseInt($("#clahe-clip-limit").val());
+                var mode = $("#clahe-mode").val();
+
+                console.log("Applying CLAHE with tile size " + tileSize + ", clip limit " + clipLimit + ", and mode " + mode);
+                if (mode === "rgb"){
+                    imageproc.claheRGB(processedImage, outputImage, tileSize, clipLimit);
+                }
+                else {
+                    imageproc.claheGrayscale(processedImage, outputImage, tileSize, clipLimit);
+                }
+                break;
         }
     }
 
@@ -237,7 +251,7 @@
         }
         // Apply the histogram operations
         var histogramImage = outlineLayer;
-        if (currentHistogramOp == "histogram-equalization" ) {
+        if (currentHistogramOp == "histogram-equalization" || currentHistogramOp == "clahe") {
             histogramImage = imageproc.createBuffer(outputImage);
             applyHistogramOp(processedImage, histogramImage);
         }

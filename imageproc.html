@@ -120,6 +120,7 @@
                         <ul class="dropdown-menu">
                             <li><a class="dropdown-item" href="#no-op">Do Nothing</a></li>
                             <li><a class="dropdown-item" href="#histogram-equalization">Histogram Equalization</a></li>
+                            <li><a class="dropdown-item" href="#clahe">CLAHE</a></li>
                         </ul>
                     </li>
                     
@@ -446,6 +447,42 @@
                         </div>
                     </div>
 
+                    <div class="tab-pane fade" id="clahe">
+                        <div class="container-fluid">
+                            <div class="row">
+                                <div class="col-3">
+                                    <label for="clahe-tile-size"><strong>Tile Size:</strong></label>
+                                    <select id="clahe-tile-size" class="form-control">
+                                        <option value="4">4 x 4 pixels</option>
+                                        <option value="8" selected>8 x 8 pixels</option>
+                                        <option value="16">16 x 16 pixels</option>
+                                    </select>
+                                    <small class="form-text text-muted">Smaller tiles = more local contrast</small>
+                                </div>
+                                <div class="col-3">
+                                    <label for="clahe-clip-limit"><strong>Clip Limit:</strong></label>
+                                    <div class="input-group">
+                                        <div class="row flex-fill align-items-center mx-0 px-2 border rounded-left">
+                                            <input class="custom-range" id="clahe-clip-limit" type="range" value="3" min="1" max="10" step="1"
+                                             oninput="$(this).parents('.input-group').find('.input-group-text > span').html($(this).val())">
+                                        </div>
+                                        <div class="input-group-append"><span class="input-group-text"><span>3</span></span></div>
+                                    </div>
+                                    <small class="form-text text-muted">Higher = more contrast</small>
+                                </div>
+                                <div class="col-3">
+                                    <label for="clahe-mode"><strong>Mode:</strong></label>
+                                    <select id="clahe-mode" class="form-control">
+                                        <option value="gray">Grayscale CLAHE</option>
+                                        <option value="rgb">RGB Channel CLAHE</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    
+
                     <div class="tab-pane fade" id="histogram-visualization">
                         <div class="container-fluid">
                             <div class="row">
@@ -531,6 +568,7 @@
     <script src="js/dither.js"></script>
     <script src="js/outline.js"></script>
     <script src="js/histogram.js"></script>
+    <script src="js/clahe.js"></script>  
     <script src="js/main.js"></script>
     <script src="js/layers.js"></script>
 
