@@ -16,6 +16,12 @@
     .nav-tabs, .nav-tabs .dropdown-item { font-size: 14px; }
     .toggle { height: 38px !important; }
     canvas { border: 1px solid black; }
+
+    #histogram-visualization {
+        margin-top: 25px;
+        padding-top: 15px;
+        border-top: 1px solid #ddd;
+    }
     </style>
 </head>
 <body>
@@ -124,16 +130,6 @@
                         </ul>
                     </li>
                     
-                    <li class="nav-item dropdown" id="histogram-vis-dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" data-toggle="dropdown">
-                            Histogram<br>
-                            <span class="title">Do Nothing</span>
-                        </a>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="#no-op">Do Nothing</a></li>
-                            <li><a class="dropdown-item" href="#histogram-visualization">Histogram Visualization</a></li>
-                        </ul>
-                    </li>
 
                     
 
@@ -483,70 +479,73 @@
 
                     
 
-                    <div class="tab-pane fade" id="histogram-visualization">
-                        <div class="container-fluid">
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <h5>Input Image</h5>
+                <!-- Always visible histogram visualization -->
+                <div id="histogram-visualization" class="container-fluid">
+                    <h5>Histogram Visualization</h5>
 
-                                    <div class="form-group">
-                                        <label><strong>Channels:</strong></label><br>
-                                        <input type="checkbox" id="input-hist-red">
-                                        <label for="input-hist-red">Red</label>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Input Image</h6>
 
-                                        <input type="checkbox" id="input-hist-green">
-                                        <label for="input-hist-green">Green</label>
+                            <div class="form-group">
+                                <label><strong>Channels:</strong></label><br>
 
-                                        <input type="checkbox" id="input-hist-blue">
-                                        <label for="input-hist-blue">Blue</label>
+                                <input type="checkbox" id="input-hist-red">
+                                <label for="input-hist-red">Red</label>
 
-                                        <input type="checkbox" id="input-hist-gray" >
-                                        <label for="input-hist-gray">Gray</label>
-                                    </div>
+                                <input type="checkbox" id="input-hist-green">
+                                <label for="input-hist-green">Green</label>
 
-                                    <div class="form-group">
-                                        <label><strong>Histogram</strong></label><br>
-                                        <canvas id="input-histogram" width="320" height="180" style="border:1px solid #ccc;"></canvas>
-                                    </div>
+                                <input type="checkbox" id="input-hist-blue">
+                                <label for="input-hist-blue">Blue</label>
 
-                                    <div class="form-group">
-                                        <label><strong>CDF</strong></label><br>
-                                        <canvas id="input-cdf" width="320" height="180" style="border:1px solid #ccc;"></canvas>
-                                    </div>
-                                </div>
+                                <input type="checkbox" id="input-hist-gray">
+                                <label for="input-hist-gray">Gray</label>
+                            </div>
 
-                                <div class="col-md-6">
-                                    <h5>Output Image</h5>
+                            <div class="form-group">
+                                <label><strong>Histogram</strong></label><br>
+                                <canvas id="input-histogram" width="320" height="180" style="border:1px solid #ccc;"></canvas>
+                            </div>
 
-                                    <div class="form-group">
-                                        <label><strong>Channels:</strong></label><br>
-                                        <input type="checkbox" id="output-hist-red">
-                                        <label for="output-hist-red">Red</label>
+                            <div class="form-group">
+                                <label><strong>CDF</strong></label><br>
+                                <canvas id="input-cdf" width="320" height="180" style="border:1px solid #ccc;"></canvas>
+                            </div>
+                        </div>
 
-                                        <input type="checkbox" id="output-hist-green">
-                                        <label for="output-hist-green">Green</label>
+                        <div class="col-md-6">
+                            <h6>Output Image</h6>
 
-                                        <input type="checkbox" id="output-hist-blue">
-                                        <label for="output-hist-blue">Blue</label>
+                            <div class="form-group">
+                                <label><strong>Channels:</strong></label><br>
 
-                                        <input type="checkbox" id="output-hist-gray" >
-                                        <label for="output-hist-gray">Gray</label>
-                                    </div>
+                                <input type="checkbox" id="output-hist-red">
+                                <label for="output-hist-red">Red</label>
 
-                                    <div class="form-group">
-                                        <label><strong>Histogram</strong></label><br>
-                                        <canvas id="output-histogram" width="320" height="180" style="border:1px solid #ccc;"></canvas>
-                                    </div>
+                                <input type="checkbox" id="output-hist-green">
+                                <label for="output-hist-green">Green</label>
 
-                                    <div class="form-group">
-                                        <label><strong>CDF</strong></label><br>
-                                        <canvas id="output-cdf" width="320" height="180" style="border:1px solid #ccc;"></canvas>
-                                    </div>
-                                </div>
+                                <input type="checkbox" id="output-hist-blue">
+                                <label for="output-hist-blue">Blue</label>
+
+                                <input type="checkbox" id="output-hist-gray">
+                                <label for="output-hist-gray">Gray</label>
+                            </div>
+
+                            <div class="form-group">
+                                <label><strong>Histogram</strong></label><br>
+                                <canvas id="output-histogram" width="320" height="180" style="border:1px solid #ccc;"></canvas>
+                            </div>
+
+                            <div class="form-group">
+                                <label><strong>CDF</strong></label><br>
+                                <canvas id="output-cdf" width="320" height="180" style="border:1px solid #ccc;"></canvas>
                             </div>
                         </div>
                     </div>
-
+                </div>
+                <!-- End visualization -->
 
 
                 </div>
