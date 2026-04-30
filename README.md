@@ -1,7 +1,7 @@
 # COMP4431_miniproject
 
 
-# Image Histogram Equalization and Histogram Visualization
+## Image Histogram Equalization and Histogram Visualization
 
 
 Description
@@ -19,7 +19,10 @@ Standard histogram equalization can over-amplify noise in homogeneous regions. A
 
 We will provide a visualization of the histograms and CDF curves of the input and output images. This allows users to observe how the pixel intensity distribution changes before and after the equalization.
 
+
 Functionalities
+
+
 Features called “Histogram Equalization” and “CLAHE” will be added to the new dropdown list, and “Histogram Visualization” will be added to the bottom of the page. The following functionalities/ features will be added to the image processing lab program.
 
 1. Basic Histogram Equalization:
