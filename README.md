@@ -1,8 +1,11 @@
 # COMP4431_miniproject
 
 
-Image Histogram Equalization and Histogram Visualization
+# Image Histogram Equalization and Histogram Visualization
+
+
 Description
+
 In this project, we will add histogram equalization and histogram visualization to the existing image processing lab. The GUI will be adjusted to accommodate this feature on top of the image processing lab framework.
 
 This project will provide histogram equalization on RGB channels and grayscale for input image. Techniques from the OpenCV documentation on histogram equalization and lecture notes on image histograms will be applied. 
