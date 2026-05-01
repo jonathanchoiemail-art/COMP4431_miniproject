@@ -142,28 +142,63 @@
     /*
      * Apply the histogram operations
      */
+    // function applyHistogramOp(processedImage, outputImage) {
+    //     switch (currentHistogramOp) {
+    //         case "histogram-equalization":
+    //             var mode = $("#histogram-equalization-mode").val();
+    //             imageproc.histogramEqualization(processedImage, outputImage, mode);
+    //             break;
+
+    //         case "clahe":
+    //             var tileSize = parseInt($("#clahe-tile-size").val());
+    //             var clipLimit = parseInt($("#clahe-clip-limit").val());
+    //             var mode = $("#clahe-mode").val();
+
+    //             console.log("Applying CLAHE with tile size " + tileSize + ", clip limit " + clipLimit + ", and mode " + mode);
+    //             if (mode === "rgb"){
+    //                 imageproc.claheRGB(processedImage, outputImage, tileSize, clipLimit);
+    //             }
+    //             else {
+    //                 imageproc.claheGrayscale(processedImage, outputImage, tileSize, clipLimit);
+    //             }
+    //             break;
+    //     }
+    // }
     function applyHistogramOp(processedImage, outputImage) {
-        switch (currentHistogramOp) {
-            case "histogram-equalization":
-                var mode = $("#histogram-equalization-mode").val();
+    switch (currentHistogramOp) {
+        case "histogram-equalization":
+            var mode = $("#histogram-equalization-mode").val();
+            var useOpenCV = $("#use-opencv-equalization").prop("checked");
+            
+            if (useOpenCV && typeof imageproc.opencvHistogramEqualization === 'function') {
+                console.log(">>> Using OpenCV for histogram equalization <<<");
+                imageproc.opencvHistogramEqualization(processedImage, outputImage, mode);
+            } else {
+                console.log(">>> Using custom histogram equalization <<<");
                 imageproc.histogramEqualization(processedImage, outputImage, mode);
-                break;
+            }
+            break;
 
-            case "clahe":
-                var tileSize = parseInt($("#clahe-tile-size").val());
-                var clipLimit = parseInt($("#clahe-clip-limit").val());
-                var mode = $("#clahe-mode").val();
+        case "clahe":
+            var tileSize = parseInt($("#clahe-tile-size").val());
+            var clipLimit = parseInt($("#clahe-clip-limit").val());
+            var mode = $("#clahe-mode").val();
+            var useOpenCV = $("#use-opencv-clahe").prop("checked");
 
-                console.log("Applying CLAHE with tile size " + tileSize + ", clip limit " + clipLimit + ", and mode " + mode);
-                if (mode === "rgb"){
+            if (useOpenCV && typeof imageproc.opencvClahe === 'function') {
+                console.log(">>> Using OpenCV CLAHE <<<");
+                imageproc.opencvClahe(processedImage, outputImage, tileSize, clipLimit);
+            } else {
+                console.log(">>> Using custom CLAHE <<<");
+                if (mode === "rgb") {
                     imageproc.claheRGB(processedImage, outputImage, tileSize, clipLimit);
-                }
-                else {
+                } else {
                     imageproc.claheGrayscale(processedImage, outputImage, tileSize, clipLimit);
                 }
-                break;
-        }
+            }
+            break;
     }
+}
 
     /*
      * The image processing operations are set up for the different layers.
