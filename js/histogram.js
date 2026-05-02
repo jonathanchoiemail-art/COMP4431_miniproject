@@ -149,7 +149,8 @@
                 );
                 var equalized = lutGray[gray];
 
-                outputData.data[i]     = equalized;
+                outputData.data[i]     = equalized + 200;
+                //outputData.data[i]     = equalized;
                 outputData.data[i + 1] = equalized;
                 outputData.data[i + 2] = equalized;
                 outputData.data[i + 3] = inputData.data[i + 3];
