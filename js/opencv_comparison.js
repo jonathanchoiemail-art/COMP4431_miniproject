@@ -2,7 +2,7 @@
     "use strict";
 
     // only grayscale
-    imageproc.opencvClaheSimple = function(inputData, outputData, tileSize, clipLimit) {
+    imageproc.opencvClahe = function(inputData, outputData, tileSize, clipLimit) {
         console.log("Simple OpenCV CLAHE");
         
         var stdInput = new ImageData(inputData.width, inputData.height);
