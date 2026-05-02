@@ -52,7 +52,18 @@
 
         // Put the output image in the canvas
         output.putImageData(outputImage, 0, 0);
-    }
+
+        // Redraw histogram graphs after the output image changes
+        requestAnimationFrame(function() {
+        if (typeof imageproc.updateHistograms === "function") {
+            imageproc.updateHistograms();
+        } else {
+            $("input[type=checkbox]").trigger("change");
+        }
+    });
+
+
+}
 
     /*
      * Convert RGB to HSV
