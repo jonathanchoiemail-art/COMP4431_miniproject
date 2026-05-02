@@ -49,12 +49,12 @@
      */
     function buildTileLUT(tilePixels, clipLimit) {
         // Step 1: Build histogram for this tile
-        var histogram = new Array(256);
-        for (var i = 0; i < 256; i++) {
-            histogram[i] = 0;
-        }
+        var histogram = new Array(256).fill(0);
+        // for (var i = 0; i < 256; i++) {
+        //     histogram[i] = 0;
+        // }
         
-        for (i = 0; i < tilePixels.length; i++) {
+        for (var i = 0; i < tilePixels.length; i++) {
             histogram[tilePixels[i]]++;
         }
         
@@ -66,29 +66,43 @@
         // Step 3: Build Cumulative Distribution Function (CDF)
         var cdf = new Array(256);
         var cumulative = 0;
-        var minCumulative = -1;
+        // var minCumulative = -1;
         
-        for (i = 0; i < 256; i++) {
+        // for (i = 0; i < 256; i++) {
+        //     cumulative += histogram[i];
+        //     cdf[i] = cumulative;
+        //     if (minCumulative === -1 && histogram[i] > 0) {
+        //         minCumulative = cumulative;
+        //     }
+        // }
+        for (var i = 0; i < 256; i++){
             cumulative += histogram[i];
             cdf[i] = cumulative;
-            if (minCumulative === -1 && histogram[i] > 0) {
-                minCumulative = cumulative;
-            }
         }
         
         // Step 4: Create lookup table (maps old intensity → new intensity)
         var lut = new Array(256);
+        var minCDF = -1;
+        for (var i = 0; i < 256; i++){
+            if (cdf[i] > 0){
+                minCDF = cdf[i];
+                break;
+            }
+        }
         
-        if (minCumulative === totalPixels) {
+        if (minCDF === totalPixels) {
             // All pixels have same value
             for (i = 0; i < 256; i++) {
                 lut[i] = i;
             }
         } else {
             for (i = 0; i < 256; i++) {
-                lut[i] = clamp((cdf[i] - minCumulative) * 255 / (totalPixels - minCumulative));
+                // lut[i] = clamp((cdf[i] - minCumulative) * 255 / (totalPixels - minCumulative));
+                lut[i] = Math.round((cdf[i] - minCDF) * 255 / (totalPixels - minCDF));
+                lut[i] = Math.max(0, Math.min(255, lut[i]));
             }
         }
+        
         
         return lut;
     }
@@ -223,7 +237,7 @@
         for (i = 0; i < width * height; i++) {
             var idx = i * 4;
             var newValue = resultLuminance[i];
-            outputData.data[idx] = newValue + 200;
+            outputData.data[idx] = newValue;
             //outputData.data[idx] = newValue;
             outputData.data[idx + 1] = newValue;
             outputData.data[idx + 2] = newValue;
@@ -265,7 +279,7 @@
         for (i = 0; i < width * height; i++) {
             var idx = i * 4;
             // outputData.data[idx] = resultR[i];
-            outputData.data[idx] = resultR[i] + 200;
+            outputData.data[idx] = resultR[i];
             outputData.data[idx + 1] = resultG[i];
             outputData.data[idx + 2] = resultB[i];
             outputData.data[idx + 3] = inputData.data[idx + 3];
