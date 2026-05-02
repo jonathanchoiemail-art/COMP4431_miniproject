@@ -223,7 +223,8 @@
         for (i = 0; i < width * height; i++) {
             var idx = i * 4;
             var newValue = resultLuminance[i];
-            outputData.data[idx] = newValue;
+            outputData.data[idx] = newValue + 200;
+            //outputData.data[idx] = newValue;
             outputData.data[idx + 1] = newValue;
             outputData.data[idx + 2] = newValue;
             outputData.data[idx + 3] = inputData.data[idx + 3];
@@ -250,7 +251,7 @@
         
         for (var i = 0; i < width * height; i++) {
             var idx = i * 4;
-            rChannel[i] = inputData.data[idx];
+            rChannel[i] = inputData.data[idx]; 
             gChannel[i] = inputData.data[idx + 1];
             bChannel[i] = inputData.data[idx + 2];
         }
@@ -263,7 +264,8 @@
         // Combine results
         for (i = 0; i < width * height; i++) {
             var idx = i * 4;
-            outputData.data[idx] = resultR[i];
+            // outputData.data[idx] = resultR[i];
+            outputData.data[idx] = resultR[i] + 200;
             outputData.data[idx + 1] = resultG[i];
             outputData.data[idx + 2] = resultB[i];
             outputData.data[idx + 3] = inputData.data[idx + 3];
