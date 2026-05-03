@@ -55,8 +55,8 @@
 
         // Redraw histogram graphs after the output image changes
         requestAnimationFrame(function() {
-        if (typeof imageproc.updateHistograms === "function") {
-            imageproc.updateHistograms();
+        if (typeof imageproc.updateHistogramDisplays === "function") {
+            imageproc.updateHistogramDisplays();
         } else {
             $("input[type=checkbox]").trigger("change");
         }
