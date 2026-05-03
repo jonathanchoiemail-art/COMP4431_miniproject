@@ -64,20 +64,54 @@
         };
     }
 
+    // function buildLutFromCdf(cdfInfo, totalPixels) {
+    //     var lut = new Array(256);
+
+    //     if (cdfInfo.firstNonZeroCdf === totalPixels) {
+    //         for (var i = 0; i < 256; i++) {
+    //             lut[i] = i;
+    //         }
+
+    //         return lut;
+    //     }
+
+    //     for (var j = 0; j < 256; j++) {
+    //         var mappedValue = (cdfInfo.cdf[j] - cdfInfo.firstNonZeroCdf) * 255 / (totalPixels - cdfInfo.firstNonZeroCdf);
+    //         lut[j] = clampByte(mappedValue);
+    //     }
+
+    //     return lut;
+    // }
+//     function buildLutFromCdf(cdfInfo, totalPixels) {
+//         var lut = new Uint8Array(256);
+//         var cdf = cdfInfo.cdf;
+//         var minCdf = cdfInfo.firstNonZeroCdf;
+
+//         // Handle the case where all pixels in a tile are the same color
+//         if (minCdf === totalPixels) {
+//             for (var i = 0; i < 256; i++) lut[i] = i;
+//             return lut;
+//         }
+
+//         for (var i = 0; i < 256; i++) {
+//             // Correct Mapping Formula: (CDF(i) - minCDF) / (Total - minCDF) * 255
+//             var mappedValue = (cdf[i] - minCdf) * 255 / (totalPixels - minCdf);
+//             lut[i] = clampByte(mappedValue);
+//         }
+//     return lut;
+// }
     function buildLutFromCdf(cdfInfo, totalPixels) {
-        var lut = new Array(256);
+        var lut = new Uint8Array(256);
+        var cdf = cdfInfo.cdf;
 
-        if (cdfInfo.firstNonZeroCdf === totalPixels) {
-            for (var i = 0; i < 256; i++) {
-                lut[i] = i;
-            }
-
-            return lut;
-        }
-
-        for (var j = 0; j < 256; j++) {
-            var mappedValue = (cdfInfo.cdf[j] - cdfInfo.firstNonZeroCdf) * 255 / (totalPixels - cdfInfo.firstNonZeroCdf);
-            lut[j] = clampByte(mappedValue);
+        for (var i = 0; i < 256; i++) {
+            // Standard mapping
+            var equalized = (cdf[i] / totalPixels) * 255;
+            
+            // Linear blending (e.g., 80% CLAHE + 20% Original)
+            // This prevents the "white-out" effect in bright areas
+            var influence = 0.8; 
+            lut[i] = Math.round((equalized * influence) + (i * (1 - influence)));
         }
 
         return lut;
@@ -86,7 +120,8 @@
     function buildTileLUT(tilePixels, clipLimit) {
         var histogram = buildHistogram(tilePixels);
         var totalPixels = tilePixels.length;
-        var actualClipLimit = Math.max(1, (totalPixels / 256) * clipLimit);
+        // var actualClipLimit = Math.max(1, (totalPixels / 256) * clipLimit);
+        var actualClipLimit = Math.max(1, (totalPixels / 256) * (clipLimit / 2));
         var clippedHistogram = clipHistogram(histogram, actualClipLimit);
         var cdfInfo = buildCdf(clippedHistogram);
 
