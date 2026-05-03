@@ -107,9 +107,10 @@ $(document).ready(function() {
     // Update the input image when the selection is changed
     $("#input-image").on("change", function() { 
 
-        if (typeof imageproc.updateHistograms === "function") {
-            imageproc.updateHistograms();
+        if (typeof imageproc.updateHistogramDisplays === "function") {
+            imageproc.updateHistogramDisplays();
         }
+        imageproc.updateInputImage();
      });
 
     // Update button to apply all image processing functions
