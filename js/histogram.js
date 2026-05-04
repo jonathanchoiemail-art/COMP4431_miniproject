@@ -195,11 +195,20 @@
      */
     imageproc.drawHistogram = function(canvasId, histograms) {
         var canvas = document.getElementById(canvasId);
-        if (!canvas || histograms.length === 0) {
+        if (!canvas) {
             return;
         }
 
         var ctx = canvas.getContext("2d");
+
+        /*
+         * no checkbox is selected, clear the canvas.
+         */
+        if (!histograms || histograms.length === 0) {
+            clearCanvas(ctx);
+            return;
+        }
+
         var pad = 30;
         var plotW = canvas.width - pad - 10;
         var plotH = canvas.height - 10 - pad;
@@ -238,11 +247,20 @@
      */
     imageproc.drawCDF = function(canvasId, curves) {
         var canvas = document.getElementById(canvasId);
-        if (!canvas || curves.length === 0) {
+        if (!canvas) {
             return;
         }
 
         var ctx = canvas.getContext("2d");
+
+        /*
+         * no checkbox is selected, clear the CDF canvas
+         */
+        if (!curves || curves.length === 0) {
+            clearCanvas(ctx);
+            return;
+        }
+
         var pad = 30;
         var plotW = canvas.width - pad - 10;
         var plotH = canvas.height - 10 - pad;
@@ -293,9 +311,8 @@
         }
 
         if (channels.length === 0) {
-            channels.push({ key: "gray", color: "rgba(80, 80, 80, 0.95)" });
+            //channels.push({ key: "gray", color: "rgba(80, 80, 80, 0.95)" });
         }
-
         return channels;
     }
 
@@ -311,10 +328,22 @@
 
     function renderGroup(imageData, checkboxPrefix, histogramCanvasId, cdfCanvasId) {
         if (!imageData) {
+            imageproc.drawHistogram(histogramCanvasId, []);
+            imageproc.drawCDF(cdfCanvasId, []);
             return;
         }
 
         var channels = getSelectedChannels(checkboxPrefix);
+
+        /*
+         * If no channel checkbox is selected, clear both graphs.
+         */
+        if (channels.length === 0) {
+            imageproc.drawHistogram(histogramCanvasId, []);
+            imageproc.drawCDF(cdfCanvasId, []);
+            return;
+        }
+
         var histograms = [];
         var cdfs = [];
         var i;
