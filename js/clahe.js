@@ -31,14 +31,12 @@
                 histogram[i] = clipLimit;
             }
         }
-
         var inc = Math.floor(excess / 256);
         var remainder = excess % 256;
 
         for (var i = 0; i < 256; i++) {
             histogram[i] += inc;
         }
-
         // FIX: guard remainder===0 to avoid floor(256/0) = Infinity
         if (remainder > 0) {
             var stride = Math.floor(256 / remainder);
@@ -46,7 +44,33 @@
                 histogram[Math.min(i * stride, 255)]++;
             }
         }
+        return histogram;
+    }
 
+    function clipHistogramFairly(histogram, clipLimit) {
+        // clip the histogram and calculate total number of clipped pixels
+        let clipped = 0;
+        for (let i = 0; i < 256; i++) {
+            if (histogram[i] > clipLimit) {
+                clipped += histogram[i] - clipLimit;
+                histogram[i] = clipLimit;
+            }
+        }
+        // 1. baseline amont is distributed uniformly to all bins
+        const redistBatch = Math.floor(clipped / 256);
+
+        for (let i = 0; i < 256; i++) {
+            histogram[i] += redistBatch;
+        }
+        // then the remainder distributed one by one 
+        let residual = clipped % 256;
+
+        if (residual !== 0){
+            const residualStep = Math.max(Math.floor(256 / residual), 1);
+            for (let i = 0; i < 256 && residual > 0; i += residualStep, residual--) {
+                histogram[i]++;
+            }
+        }
         return histogram;
     }
 
@@ -92,13 +116,16 @@
         var minCdf = cdfInfo.firstNonZeroCdf;
 
         if (minCdf < 0 || minCdf >= totalPixels) {
+        // if (totalPixels === 0) {
             for (var i = 0; i < 256; i++) lut[i] = i;
             return lut;
         }
 
         var denom = totalPixels - minCdf;
+        // var denom = totalPixels;
         for (var i = 0; i < 256; i++) {
             lut[i] = clampByte((cdf[i] - minCdf) * 255.0 / denom);
+            // lut[i] = clampByte(cdf[i] * 255.0 / denom);
         }
 
         return lut;
@@ -126,9 +153,12 @@
 
         var averagePixelsPerBin = totalPixels / 256;
         // var actualClipLimit = Math.max(1, Math.floor(clipLimit * averagePixelsPerBin));
-        var actualClipLimit = clipLimit;
+        // var actualClipLimit = clipLimit;
+        var dampingFactor = 2.0;
+        var actualClipLimit = Math.max(1, Math.floor((clipLimit*dampingFactor)*averagePixelsPerBin));
 
-        var clippedHistogram = clipHistogram(histogram, actualClipLimit);
+        // var clippedHistogram = clipHistogram(histogram, actualClipLimit);
+        var clippedHistogram = clipHistogramFairly(histogram, actualClipLimit);
         var cdfInfo = buildCdf(clippedHistogram);
 
         return buildLutFromCdf(cdfInfo, totalPixels);
@@ -198,12 +228,17 @@
      */
     function interpolateChannel(channelData, width, height, tileSize, luts, tilesX, tilesY) {
         var result = new Uint8ClampedArray(width * height);
+        var invTileSize = 1.0 / tileSize;
 
         for (var y = 0; y < height; y++) {
             for (var x = 0; x < width; x++) {
-                var txFloat = Math.max(0, Math.min(tilesX - 1, (x + 0.5) / tileSize - 0.5));
-                var tyFloat = Math.max(0, Math.min(tilesY - 1, (y + 0.5) / tileSize - 0.5));
-
+                // var txFloat = Math.max(0, Math.min(tilesX - 1, (x + 0.5) / tileSize - 0.5));
+                // var tyFloat = Math.max(0, Math.min(tilesY - 1, (y + 0.5) / tileSize - 0.5));
+                var txFloat = x * invTileSize - 0.5;
+                var tyFloat = y * invTileSize - 0.5;
+                txFloat = Math.max(0, Math.min(tilesX - 1, txFloat));
+                tyFloat = Math.max(0, Math.min(tilesY - 1, tyFloat));
+                
                 var tx1 = Math.floor(txFloat);
                 var tx2 = Math.min(tx1 + 1, tilesX - 1);
                 var ty1 = Math.floor(tyFloat);
@@ -211,6 +246,7 @@
 
                 var wx = txFloat - tx1;
                 var wy = tyFloat - ty1;
+
                 var oldValue = channelData[y * width + x];
 
                 var v11 = luts[ty1][tx1][oldValue];
