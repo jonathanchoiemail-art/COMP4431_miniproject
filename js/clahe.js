@@ -152,10 +152,13 @@
         var totalPixels = tilePixels.length;
 
         var averagePixelsPerBin = totalPixels / 256;
-        // var actualClipLimit = Math.max(1, Math.floor(clipLimit * averagePixelsPerBin));
+
+        var actualClipLimit = Math.max(1, Math.floor(clipLimit * averagePixelsPerBin));
         // var actualClipLimit = clipLimit;
-        var dampingFactor = 2.0;
-        var actualClipLimit = Math.max(1, Math.floor((clipLimit*dampingFactor)*averagePixelsPerBin));
+        
+        // previously, we have small grids, so used dampingfactor to smooth out
+        // var dampingFactor = 2.0;
+        // var actualClipLimit = Math.max(1, Math.floor((clipLimit*dampingFactor)*averagePixelsPerBin));
 
         // var clippedHistogram = clipHistogram(histogram, actualClipLimit);
         var clippedHistogram = clipHistogramFairly(histogram, actualClipLimit);
@@ -165,11 +168,9 @@
     }
 
     // KEPT IDENTICAL to clahe2.js
-    function padChannelData(channelData, width, height, tileSize) {
-        var tilesX = Math.ceil(width / tileSize);
-        var tilesY = Math.ceil(height / tileSize);
-        var paddedWidth = tilesX * tileSize;
-        var paddedHeight = tilesY * tileSize;
+    function padChannelData(channelData, width, height, tileWidth, tileHeight, tilesX, tilesY) {
+        var paddedWidth = tilesX * tileWidth;
+        var paddedHeight = tilesY * tileHeight;
         var padded = new Array(paddedHeight);
 
         for (var y = 0; y < paddedHeight; y++) {
@@ -195,23 +196,23 @@
     }
 
     // KEPT IDENTICAL to clahe2.js
-    function extractTilePixels(padded, tileSize, tx, ty) {
+    function extractTilePixels(padded, tileWidth, tileHeight, tx, ty) {
         var tilePixels = [];
-        for (var yi = 0; yi < tileSize; yi++) {
-            for (var xi = 0; xi < tileSize; xi++) {
-                tilePixels.push(padded[ty * tileSize + yi][tx * tileSize + xi]);
+        for (var yi = 0; yi < tileHeight; yi++) {
+            for (var xi = 0; xi < tileWidth; xi++) {
+                tilePixels.push(padded[ty * tileHeight + yi][tx * tileWidth + xi]);
             }
         }
         return tilePixels;
     }
 
     // KEPT IDENTICAL to clahe2.js
-    function buildTileLUTGrid(paddedInfo, tileSize, clipLimit) {
-        var luts = new Array(paddedInfo.tilesY);
-        for (var ty = 0; ty < paddedInfo.tilesY; ty++) {
-            luts[ty] = new Array(paddedInfo.tilesX);
-            for (var tx = 0; tx < paddedInfo.tilesX; tx++) {
-                var tilePixels = extractTilePixels(paddedInfo.padded, tileSize, tx, ty);
+    function buildTileLUTGrid(paddedInfo, tileWidth, tileHeight, tilesX, tilesY, clipLimit) {
+        var luts = new Array(tilesY);
+        for (var ty = 0; ty < tilesY; ty++) {
+            luts[ty] = new Array(tilesX);
+            for (var tx = 0; tx < tilesX; tx++) {
+                var tilePixels = extractTilePixels(paddedInfo.padded, tileWidth, tileHeight, tx, ty);
                 luts[ty][tx] = buildTileLUT(tilePixels, clipLimit);
             }
         }
@@ -226,16 +227,15 @@
      * min(tx1+1, tilesX-1) always picks the next tile, letting wx blend
      * smoothly. Everything else is identical to clahe2.js.
      */
-    function interpolateChannel(channelData, width, height, tileSize, luts, tilesX, tilesY) {
+    function interpolateChannel(channelData, width, height, tileWidth, tileHeight, luts, tilesX, tilesY) {
         var result = new Uint8ClampedArray(width * height);
-        var invTileSize = 1.0 / tileSize;
+        var invTileWidth = 1.0 / tileWidth;
+        var invTileHeight = 1.0 / tileHeight;
 
         for (var y = 0; y < height; y++) {
             for (var x = 0; x < width; x++) {
-                // var txFloat = Math.max(0, Math.min(tilesX - 1, (x + 0.5) / tileSize - 0.5));
-                // var tyFloat = Math.max(0, Math.min(tilesY - 1, (y + 0.5) / tileSize - 0.5));
-                var txFloat = x * invTileSize - 0.5;
-                var tyFloat = y * invTileSize - 0.5;
+                var txFloat = x * invTileWidth - 0.5;
+                var tyFloat = y * invTileHeight - 0.5;
                 txFloat = Math.max(0, Math.min(tilesX - 1, txFloat));
                 tyFloat = Math.max(0, Math.min(tilesY - 1, tyFloat));
                 
@@ -265,10 +265,13 @@
     }
 
     // KEPT IDENTICAL to clahe2.js
-    function applyCLAHEtoChannel(channelData, width, height, tileSize, clipLimit) {
-        var paddedInfo = padChannelData(channelData, width, height, tileSize);
-        var luts = buildTileLUTGrid(paddedInfo, tileSize, clipLimit);
-        return interpolateChannel(channelData, width, height, tileSize, luts, paddedInfo.tilesX, paddedInfo.tilesY);
+    function applyCLAHEtoChannel(channelData, width, height, tilesX, tilesY, clipLimit) {
+        var tileWidth = Math.floor(width / tilesX);
+        var tileHeight = Math.floor(height / tilesY);
+
+        var paddedInfo = padChannelData(channelData, width, height, tileWidth, tileHeight, tilesX, tilesY);
+        var luts = buildTileLUTGrid(paddedInfo, tileWidth, tileHeight, tilesX, tilesY, clipLimit);
+        return interpolateChannel(channelData, width, height, tileWidth, tileHeight, luts, tilesX, tilesY);
     }
 
     // KEPT IDENTICAL to clahe2.js
@@ -320,21 +323,21 @@
         }
     }
 
-    imageproc.claheGrayscale = function(inputData, outputData, tileSize, clipLimit) {
-        console.log("CLAHE Grayscale: tileSize=" + tileSize + ", clipLimit=" + clipLimit);
+    imageproc.claheGrayscale = function(inputData, outputData, tilesX, tilesY, clipLimit) {
+        console.log("CLAHE Grayscale: tilesX=" + tilesX + ", tilesY=" + tilesY + ", clipLimit=" + clipLimit);
         var w = inputData.width, h = inputData.height;
         var lum    = extractGrayscaleChannel(inputData);
-        var result = applyCLAHEtoChannel(lum, w, h, tileSize, clipLimit);
+        var result = applyCLAHEtoChannel(lum, w, h, tilesX, tilesY, clipLimit);
         writeGrayscaleOutput(outputData, inputData, result);
     };
 
-    imageproc.claheRGB = function(inputData, outputData, tileSize, clipLimit) {
-        console.log("CLAHE RGB: tileSize=" + tileSize + ", clipLimit=" + clipLimit);
+    imageproc.claheRGB = function(inputData, outputData, tilesX, tilesY, clipLimit) {
+        console.log("CLAHE RGB: tilesX=" + tilesX + ", tilesY=" + tilesY + ", clipLimit=" + clipLimit);
         var w = inputData.width, h = inputData.height;
         var ch = extractRgbChannels(inputData);
-        var rResult = applyCLAHEtoChannel(ch.r, w, h, tileSize, clipLimit);
-        var gResult = applyCLAHEtoChannel(ch.g, w, h, tileSize, clipLimit);
-        var bResult = applyCLAHEtoChannel(ch.b, w, h, tileSize, clipLimit);
+        var rResult = applyCLAHEtoChannel(ch.r, w, h, tilesX, tilesY, clipLimit);
+        var gResult = applyCLAHEtoChannel(ch.g, w, h, tilesX, tilesY, clipLimit);
+        var bResult = applyCLAHEtoChannel(ch.b, w, h, tilesX, tilesY, clipLimit);
         writeRgbOutput(outputData, inputData, rResult, gResult, bResult);
     };
 
