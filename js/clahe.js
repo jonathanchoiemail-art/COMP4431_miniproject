@@ -115,17 +115,17 @@
         var cdf = cdfInfo.cdf;
         var minCdf = cdfInfo.firstNonZeroCdf;
 
-        if (minCdf < 0 || minCdf >= totalPixels) {
-        // if (totalPixels === 0) {
+        // if (minCdf < 0 || minCdf >= totalPixels) {
+        if (totalPixels === 0) {
             for (var i = 0; i < 256; i++) lut[i] = i;
             return lut;
         }
 
-        var denom = totalPixels - minCdf;
-        // var denom = totalPixels;
+        // var denom = totalPixels - minCdf;
+        var denom = totalPixels;
         for (var i = 0; i < 256; i++) {
-            lut[i] = clampByte((cdf[i] - minCdf) * 255.0 / denom);
-            // lut[i] = clampByte(cdf[i] * 255.0 / denom);
+            // lut[i] = clampByte((cdf[i] - minCdf) * 255.0 / denom);
+            lut[i] = clampByte(cdf[i] * 255.0 / denom);
         }
 
         return lut;
