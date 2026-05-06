@@ -300,6 +300,65 @@
         return { r: r, g: g, b: b };
     }
 
+
+
+
+
+    /*
+     * Extract HSV V channel from the input image.
+     * V is brightness/value in HSV.
+     */
+    function extractVChannel(inputData) {
+        var n = inputData.width * inputData.height;
+        var vData = new Uint8ClampedArray(n);
+
+        for (var i = 0; i < n; i++) {
+            var idx = i * 4;
+
+            var r = inputData.data[idx];
+            var g = inputData.data[idx + 1];
+            var b = inputData.data[idx + 2];
+
+            var hsv = imageproc.fromRGBToHSV(r, g, b);
+
+            vData[i] = clampByte(hsv.v * 255);
+        }
+
+        return vData;
+    }
+    /*
+     * Write output by replacing only the HSV V channel.
+     * H and S are kept from the original image.
+     */
+    function writeVChannelOutput(outputData, inputData, resultV) {
+        for (var i = 0; i < resultV.length; i++) {
+            var idx = i * 4;
+
+            var r = inputData.data[idx];
+            var g = inputData.data[idx + 1];
+            var b = inputData.data[idx + 2];
+
+            var hsv = imageproc.fromRGBToHSV(r, g, b);
+
+            hsv.v = resultV[i] / 255.0;
+
+            var rgb = imageproc.fromHSVToRGB(hsv.h, hsv.s, hsv.v);
+
+            outputData.data[idx]     = rgb.r;
+            outputData.data[idx + 1] = rgb.g;
+            outputData.data[idx + 2] = rgb.b;
+            outputData.data[idx + 3] = inputData.data[idx + 3];
+        }
+    }
+
+
+
+
+
+
+
+
+
     // KEPT IDENTICAL to clahe2.js
     function writeGrayscaleOutput(outputData, inputData, resultLuminance) {
         for (var i = 0; i < resultLuminance.length; i++) {
@@ -340,5 +399,29 @@
         var bResult = applyCLAHEtoChannel(ch.b, w, h, tilesX, tilesY, clipLimit);
         writeRgbOutput(outputData, inputData, rResult, gResult, bResult);
     };
+
+
+
+
+
+    
+
+    imageproc.claheHSVValue = function(inputData, outputData, tilesX, tilesY, clipLimit) {
+        console.log("CLAHE HSV V Channel: tilesX=" + tilesX + ", tilesY=" + tilesY + ", clipLimit=" + clipLimit);
+
+        var w = inputData.width;
+        var h = inputData.height;
+
+        var vChannel = extractVChannel(inputData);
+        var resultV = applyCLAHEtoChannel(vChannel, w, h, tilesX, tilesY, clipLimit);
+
+        writeVChannelOutput(outputData, inputData, resultV);
+    };
+
+
+
+
+
+
 
 }(window.imageproc = window.imageproc || {}));

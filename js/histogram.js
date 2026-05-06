@@ -9,6 +9,98 @@
         return Math.round(0.299 * r + 0.587 * g + 0.114 * b);
     }
 
+    function rgbToHsv(r, g, b) {
+        r = r / 255;
+        g = g / 255;
+        b = b / 255;
+
+        var max = Math.max(r, g, b);
+        var min = Math.min(r, g, b);
+        var diff = max - min;
+
+        var h = 0;
+        var s = 0;
+        var v = max;
+
+        if (diff !== 0) {
+            if (max === r) {
+                h = 60 * (((g - b) / diff) % 6);
+            }
+            else if (max === g) {
+                h = 60 * (((b - r) / diff) + 2);
+            }
+            else {
+                h = 60 * (((r - g) / diff) + 4);
+            }
+
+            if (h < 0) {
+                h += 360;
+            }
+
+            s = diff / max;
+        }
+
+        return {
+            h: h,
+            s: s,
+            v: v
+        };
+    }
+
+    function hsvToRgb(h, s, v) {
+        h = ((h % 360) + 360) % 360;
+
+        var c = v * s;
+        var x = c * (1 - Math.abs((h / 60) % 2 - 1));
+        var m = v - c;
+
+        var rp = 0;
+        var gp = 0;
+        var bp = 0;
+
+        if (h < 60) {
+            rp = c;
+            gp = x;
+            bp = 0;
+        }
+        else if (h < 120) {
+            rp = x;
+            gp = c;
+            bp = 0;
+        }
+        else if (h < 180) {
+            rp = 0;
+            gp = c;
+            bp = x;
+        }
+        else if (h < 240) {
+            rp = 0;
+            gp = x;
+            bp = c;
+        }
+        else if (h < 300) {
+            rp = x;
+            gp = 0;
+            bp = c;
+        }
+        else {
+            rp = c;
+            gp = 0;
+            bp = x;
+        }
+
+        return {
+            r: clamp((rp + m) * 255),
+            g: clamp((gp + m) * 255),
+            b: clamp((bp + m) * 255)
+        };
+    }
+
+    function isValueMode(mode) {
+        return mode === "value" || mode === "v" || mode === "hsv-v";
+    }
+
+
     function getChannelValue(imageData, index, channel) {
         switch (channel) {
             case "red":
@@ -17,6 +109,13 @@
                 return imageData.data[index + 1];
             case "blue":
                 return imageData.data[index + 2];
+            
+            
+            case "value":
+                var hsv = rgbToHsv(imageData.data[index], imageData.data[index + 1], imageData.data[index + 2]);
+                return clamp(hsv.v * 255);
+
+
             case "gray":
             default:
                 return luminance(
@@ -114,7 +213,6 @@
 
     /*
      * Apply histogram equalization
-     * mode = "gray" or "rgb"
      */
     imageproc.histogramEqualization = function(inputData, outputData, mode) {
         console.log("Applying histogram equalization...");
@@ -137,6 +235,35 @@
                 outputData.data[i + 3] = inputData.data[i + 3];
             }
         }
+
+
+        else if (isValueMode(mode)) {
+            var histV = imageproc.buildHistogram(inputData, "value");
+            var lutV = makeLookupTable(histV);
+
+            for (i = 0; i < inputData.data.length; i += 4) {
+                var r = inputData.data[i];
+                var g = inputData.data[i + 1];
+                var b = inputData.data[i + 2];
+
+                var hsv = rgbToHsv(r, g, b);
+
+                var oldV = clamp(hsv.v * 255);
+                var newV = lutV[oldV];
+
+                hsv.v = newV / 255;
+
+                var rgb = hsvToRgb(hsv.h, hsv.s, hsv.v);
+
+                outputData.data[i]     = rgb.r;
+                outputData.data[i + 1] = rgb.g;
+                outputData.data[i + 2] = rgb.b;
+                outputData.data[i + 3] = inputData.data[i + 3];
+            }
+        }
+
+
+
         else {
             var histGray = imageproc.buildHistogram(inputData, "gray");
             var lutGray = makeLookupTable(histGray);
@@ -310,9 +437,14 @@
             channels.push({ key: "gray", color: "rgba(80, 80, 80, 0.95)" });
         }
 
-        if (channels.length === 0) {
-            //channels.push({ key: "gray", color: "rgba(80, 80, 80, 0.95)" });
+
+        if (isChecked(prefix + "-value") || isChecked(prefix + "-v")) {
+            channels.push({ key: "value", color: "rgba(255, 140, 0, 0.90)" });
         }
+
+
+
+
         return channels;
     }
 
@@ -384,8 +516,8 @@
     };
 
     $(document).ready(function() {
-        $("#input-hist-red, #input-hist-green, #input-hist-blue, #input-hist-gray," +
-          "#output-hist-red, #output-hist-green, #output-hist-blue, #output-hist-gray")
+        $("#input-hist-red, #input-hist-green, #input-hist-blue, #input-hist-gray, #input-hist-value, #input-hist-v, " +
+          "#output-hist-red, #output-hist-green, #output-hist-blue, #output-hist-gray, #output-hist-value, #output-hist-v")
             .on("change", function() {
                 imageproc.updateHistogramDisplays();
             });

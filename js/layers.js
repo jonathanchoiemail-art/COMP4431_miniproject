@@ -170,7 +170,11 @@
                 console.log(">>> Using custom CLAHE <<<");
                 if (mode === "rgb") {
                     imageproc.claheRGB(processedImage, outputImage, tileSize, tileSize, clipLimit);
-                } else {
+                } 
+                else if (mode == "value") {
+                        imageproc.claheHSVValue(processedImage, outputImage, tileSize, tileSize, clipLimit);
+                    }
+                else {
                     imageproc.claheGrayscale(processedImage, outputImage, tileSize, tileSize, clipLimit);
                 }
             }
