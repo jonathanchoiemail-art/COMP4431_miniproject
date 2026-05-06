@@ -165,7 +165,7 @@
 
             if (useOpenCV && typeof imageproc.opencvClahe === 'function') {
                 console.log(">>> Using OpenCV CLAHE <<<");
-                imageproc.opencvClahe(processedImage, outputImage, tileSize, clipLimit);
+                imageproc.opencvClahe(processedImage, outputImage, tileSize, clipLimit, mode);
             } else {
                 console.log(">>> Using custom CLAHE <<<");
                 if (mode === "rgb") {
